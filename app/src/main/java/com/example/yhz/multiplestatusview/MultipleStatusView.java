@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 @SuppressWarnings("unused")
 public class MultipleStatusView extends FrameLayout {
@@ -98,6 +100,28 @@ public class MultipleStatusView extends FrameLayout {
      */
     public void showError(int layoutId, ViewGroup.LayoutParams layoutParams) {
         showStatusView(layoutId, layoutParams, STATUS_ERROR);
+        changeErrorMsg("加载失败");
+    }
+
+    /**
+     * 显示错误视图
+     */
+    public void showErrorWithMsg(String msg) {
+        showStatusView(mErrorViewResId, DEFAULT_LAYOUT_PARAMS, STATUS_ERROR);
+        changeErrorMsg(msg);
+    }
+
+    private void changeErrorMsg(String msg) {
+        View statusView = getStatusView(mErrorViewResId);
+        if (statusView != null) {
+            View tvView = statusView.findViewById(R.id.error_view_tv);
+            if (tvView != null && tvView instanceof TextView) {
+                TextView view = (TextView) tvView;
+                if (!view.getText().toString().equals(msg) && msg != null) {
+                    view.setText(msg);
+                }
+            }
+        }
     }
 
     /**
@@ -135,7 +159,7 @@ public class MultipleStatusView extends FrameLayout {
     }
 
     public void showStatusView(int layoutId, ViewGroup.LayoutParams layoutParams, int status) {
-        View view = haveAddView(layoutId);
+        View view = getStatusView(layoutId);
         if (view == null) {
             view = inflateView(layoutId);
             view.setTag(layoutId);
@@ -155,7 +179,7 @@ public class MultipleStatusView extends FrameLayout {
         }
         checkNull(view, "view is null.---status::" + status);
         mViewStatus = status;
-        if (haveAddView(view) == null) {
+        if (getStatusView(view) == null) {
             if (mOnRetryClickListener != null) {
                 View clickView = getRetryView(view, status);
                 if (clickView != null && !clickView.hasOnClickListeners()) {
@@ -185,7 +209,7 @@ public class MultipleStatusView extends FrameLayout {
         return mInflater.inflate(layoutId, null);
     }
 
-    private View haveAddView(View v) {
+    private View getStatusView(View v) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             View view = getChildAt(i);
@@ -196,11 +220,11 @@ public class MultipleStatusView extends FrameLayout {
         return null;
     }
 
-    private View haveAddView(int viewId) {
+    private View getStatusView(int viewId) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             View view = getChildAt(i);
-            if (view != null && view.getTag() instanceof Integer && ((Integer)view.getTag()) == viewId) {
+            if (view != null && view.getTag() instanceof Integer && ((Integer) view.getTag()) == viewId) {
                 return view;
             }
         }
@@ -255,5 +279,11 @@ public class MultipleStatusView extends FrameLayout {
 
     public void setNoNetworkViewResId(int noNetworkViewResId) {
         this.mNoNetworkViewResId = noNetworkViewResId;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
+        return true;
     }
 }
